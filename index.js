@@ -25,6 +25,8 @@ var defaultStatsOptions = {
 };
 
 module.exports = function (options, wp, done) {
+  var cache = options.cache || {};
+
   options = clone(options) || {};
   var config = options.config || options;
   if (typeof done !== 'function') {
@@ -128,7 +130,11 @@ module.exports = function (options, wp, done) {
       }
     }
 
-    var compiler = webpack(config, function (err, stats) {
+    // Cache compiler for future use
+    var compiler = cache.compiler || webpack(config);
+    cache.compiler = compiler;
+
+    compiler.run(function (err, stats) {
       if (err) {
         self.emit('error', new gutil.PluginError('webpack-stream', err));
       }
@@ -166,7 +172,8 @@ module.exports = function (options, wp, done) {
         }));
       }
 
-      var fs = compiler.outputFileSystem = new MemoryFileSystem();
+      cache.mfs = cache.mfs || new MemoryFileSystem();
+      var fs = compiler.outputFileSystem = cache.mfs;
 
       compiler.plugin('after-emit', function (compilation, callback) {
         Object.keys(compilation.assets).forEach(function (outname) {
