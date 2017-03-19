@@ -24,15 +24,8 @@ var defaultStatsOptions = {
   errorDetails: false
 };
 
-var cache = {};
-
 module.exports = function (options, wp, done) {
-  if (cache.wp !== wp || cache.options !== options) {
-    cache = {};
-  }
-
-  cache.options = options;
-  cache.wp = wp;
+  var cache = options.cache || {};
 
   options = clone(options) || {};
   var config = options.config || options;
@@ -180,7 +173,6 @@ module.exports = function (options, wp, done) {
       }
 
       cache.mfs = cache.mfs || new MemoryFileSystem();
-
       var fs = compiler.outputFileSystem = cache.mfs;
 
       compiler.plugin('after-emit', function (compilation, callback) {
