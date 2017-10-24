@@ -3,6 +3,7 @@
 var gutil = require('gulp-util');
 var File = require('vinyl');
 var MemoryFileSystem = require('memory-fs');
+var nodePath = require('path');
 var through = require('through');
 var ProgressPlugin = require('webpack/lib/ProgressPlugin');
 var clone = require('lodash.clone');
@@ -54,7 +55,7 @@ module.exports = function (options, wp, done) {
           colors: gutil.colors.supportsColor
         }));
       } else {
-        var statsOptions = options && options.stats || {};
+        var statsOptions = (options && options.stats) || {};
 
         Object.keys(defaultStatsOptions).forEach(function (key) {
           if (typeof statsOptions[key] === 'undefined') {
@@ -137,15 +138,20 @@ module.exports = function (options, wp, done) {
     compiler.run(function (err, stats) {
       if (err) {
         self.emit('error', new gutil.PluginError('webpack-stream', err));
+        return;
       }
-      var jsonStats = stats.toJson() || {};
+      var jsonStats = stats ? stats.toJson() || {} : {};
       var errors = jsonStats.errors || [];
       if (errors.length) {
         var errorMessage = errors.reduce(function (resultMessage, nextError) {
           resultMessage += nextError.toString();
           return resultMessage;
         }, '');
-        self.emit('error', new gutil.PluginError('webpack-stream', errorMessage));
+        var compilationError = new gutil.PluginError('webpack-stream', errorMessage);
+        if (!options.watch) {
+          self.emit('error', compilationError);
+        }
+        self.emit('compilation-error', compilationError);
       }
       if (!options.watch) {
         self.queue(null);
@@ -220,7 +226,7 @@ function prepareFile (fs, compiler, outname) {
 
   var file = new File({
     base: compiler.outputPath,
-    path: path,
+    path: nodePath.join(compiler.outputPath, outname),
     contents: contents
   });
   return file;

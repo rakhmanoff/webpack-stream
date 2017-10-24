@@ -4,6 +4,11 @@ Run [webpack](https://github.com/webpack/webpack) as a stream to conveniently in
 
 [![NPM](https://nodei.co/npm/webpack-stream.png?downloads=true)](https://nodei.co/npm/webpack-stream/)
 
+
+## Installation
+If you have `npm` run the following command in the console `npm install --save-dev webpack-stream`
+
+
 ## Usage
 
 ```js
@@ -186,7 +191,25 @@ gulp.task('default', function() {
 });
 ```
 
+#### Multi-compiler support
+
+Multiple compilers are supported, but instead of passing the webpack configuration directly, you have to wrap it in an object under the key 'config'.
+
+```js
+var gulp = require('gulp');
+var webpack = require('webpack-stream');
+gulp.task('default', function() {
+  return gulp.src('src/entry.js')
+    .pipe(webpack({
+      config : require('./webpack.config.js')
+    }))
+    .pipe(gulp.dest('dist/'));
+});
+```
+
 ## Release History
+* Please check the [commit log](https://github.com/shama/webpack-stream/commits/master) in the future for release history.
+* 4.0.0 - Update `webpack` to `^3.4.1`. Update `memory-fs` and `vinyl` dependencies. Emit `compilation-error` instead of `error` when watching (@jeroennoten). Fix error when compiler throws an error (@renminghao). Fix error when stats is undefined (@Simek).
 * 3.2.0 - Ability to use multiple compilers (@saschagehlich).
 * 3.1.0 - Better error output (@hi-q).
 * 3.0.1 - Fix fonts being passed through streams (@mattlewis92).
@@ -212,5 +235,5 @@ gulp.task('default', function() {
 * 0.1.0 - Initial release
 
 ## License
-Copyright (c) 2015 Kyle Robinson Young  
+Copyright (c) 2017 Kyle Robinson Young  
 Licensed under the MIT license.
